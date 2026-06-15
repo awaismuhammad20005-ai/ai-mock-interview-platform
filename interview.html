@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Mock Interview Platform | Practice with AI Interviewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        /* Setup Screen */
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Interview Screen */
+        .interview-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .question-section {
+            margin-bottom: 30px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            color: #333;
+            line-height: 1.5;
+            padding: 20px;
+            background: #f7fafc;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .answer-section textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+        }
+
+        .answer-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .feedback-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0fdf4;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .score-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .strengths, .weaknesses {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .results-screen {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: none;
+            text-align: center;
+        }
+
+        .final-score {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin: 20px 0;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .mic-btn {
+            background: #e0e0e0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .mic-btn.active {
+            background: #dc2626;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .question-text { font-size: 1.1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 AI Mock Interview Platform</h1>
+            <p>Practice with AI-powered interviews | Get instant feedback | Improve your skills</p>
+        </div>
+
+        <!-- Setup Screen -->
+        <div id="setupScreen" class="setup-card">
+            <h2 style="margin-bottom: 20px;">Start Your Mock Interview</h2>
+            <div class="form-group">
+                <label>📂 Interview Category</label>
+                <select id="category">
+                    <option value="Behavioral">Behavioral Interview</option>
+                    <option value="Technical">Technical Interview</option>
+                    <option value="Situational">Situational Interview</option>
+                    <option value="HR">HR Interview</option>
+                </select>
+            </div>
+            <div class="form-group" id="subcategoryGroup" style="display: none;">
+                <label>💻 Technical Specialty</label>
+                <select id="subcategory">
+                    <option value="Software Development">Software Development</option>
+                    <option value="Data Science">Data Science</option>
+                    <option value="Cloud Computing">Cloud Computing</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📊 Difficulty Level</label>
+                <select id="difficulty">
+                    <option value="Beginner">Beginner - Getting started</option>
+                    <option value="Intermediate">Intermediate - Some experience</option>
+                    <option value="Advanced">Advanced - Expert level</option>
+                </select>
+            </div>
+            <button class="btn" onclick="startInterview()">Start Interview 🚀</button>
+        </div>
+
+        <!-- Interview Screen -->
+        <div id="interviewScreen" class="interview-card">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+            <div id="questionNumber" style="color: #666; margin-bottom: 10px;">Question 1 of 7</div>
+            <div class="question-section">
+                <div class="question-text" id="questionText">Loading...</div>
+            </div>
+            <div class="answer-section">
+                <button class="mic-btn" id="micBtn" onclick="toggleVoiceInput()">🎤 Voice Input</button>
+                <textarea id="answerInput" placeholder="Type your answer here... Be specific and provide examples using the STAR method (Situation, Task, Action, Result)"></textarea>
+            </div>
+            <button class="btn" onclick="submitAnswer()">Submit Answer 📤</button>
+            <div id="feedbackSection" class="feedback-section"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="resultsScreen" class="results-screen">
+            <h2>🎉 Interview Complete!</h2>
+            <div id="finalScore" class="final-score">0</div>
+            <div id="finalMessage"></div>
+            <div id="recommendations"></div>
+            <button class="btn" onclick="resetInterview()" style="margin-top: 20px;">Practice Again 🔄</button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>AI is analyzing your answer...</p>
+        </div>
+    </div>
+
+    <script>
+        let sessionId = null;
+        let currentQuestionNumber = 1;
+        let totalQuestions = 7;
+        let recognition = null;
+
+        // Show/hide technical subcategory
+        document.getElementById('category').addEventListener('change', function() {
+            const subcategoryGroup = document.getElementById('subcategoryGroup');
+            if (this.value === 'Technical') {
+                subcategoryGroup.style.display = 'block';
+            } else {
+                subcategoryGroup.style.display = 'none';
+            }
+        });
+
+        async function startInterview() {
+            const category = document.getElementById('category').value;
+            const subcategory = document.getElementById('subcategory').value;
+            const difficulty = document.getElementById('difficulty').value;
+
+            document.getElementById('setupScreen').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch('/start_interview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        category: category,
+                        subcategory: category === 'Technical' ? subcategory : null,
+                        difficulty: difficulty
+                    })
+                });
+
+                const data = await response.json();
+                sessionId = data.session_id;
+                currentQuestionNumber = 1;
+
+                document.getElementById('questionText').innerText = data.question;
+                document.getElementById('questionNumber').innerText = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+                document.getElementById('progressFill').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+                
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('interviewScreen').style.display = 'block';
+                document.getElementById('answerInput').value = '';
+                document.getElementById('feedbackSection').style.display = 'none';
+            } catch (error) {
+                alert('Error starting interview: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('setupScreen').style.display = 'block';
+            }
+        }
+
+        async function submitAnswer() {
+            const answer = document.getElementById('answerInput').value.trim();
+            
+            if (!answer) {
+                alert('Please provide an answer before submitting.');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+
+            try {
+                const response = await fetch('/submit_answer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        session_id: sessionId,
+                        answer: answer,
+                        question_number: currentQuestionNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.completed) {
+                    // Show feedback for last question
+                    displayFeedback(data.feedback);
+                    setTimeout(() => {
+                        showResults(data.overall_score, data.overall_feedback);
+                    }, 2000);
+                } else {
+                    // Display feedback
+                    displayFeedback(data.feedback);
+                    
+                    // Update for next question
+                    currentQuestionNumber = data.question_number;
+                    document.getElementById('questionText').innerText = data.next_question;
+                    document.getElementById('questionNumber').innerText = `Question ${currentQuestionNumber} of ${totalQuestions}`;
+                    document.getElementById('progressFill').style.width = `${(currentQuestionNumber / totalQuestions) * 100}%`;
+                    document.getElementById('answerInput').value = '';
+                    
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+                
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                alert('Error submitting answer: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayFeedback(feedback) {
+            const feedbackDiv = document.getElementById('feedbackSection');
+            const score = feedback.score || 0;
+            
+            let scoreColor = '#dc2626';
+            if (score >= 75) scoreColor = '#16a34a';
+            else if (score >= 50) scoreColor = '#eab308';
+            
+            feedbackDiv.innerHTML = `
+                <h3>📊 Instant Feedback</h3>
+                <div class="score-badge" style="background: ${scoreColor}">Score: ${score}/100</div>
+                <p><strong>📝 Feedback:</strong> ${feedback.feedback}</p>
+                <div class="strengths">
+                    <strong>✅ Strengths:</strong>
+                    <ul>${(feedback.strengths || []).map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+                <div class="weaknesses">
+                    <strong>⚠️ Areas for Improvement:</strong>
+                    <ul>${(feedback.weaknesses || []).map(w => `<li>${w}</li>`).join('')}</ul>
+                </div>
+                <div>
+                    <strong>💡 Improvement Suggestions:</strong>
+                    <ul>${(feedback.improvement_suggestions || []).map(s => `<li>${s}</li>`).join('')}</ul>
+                </div>
+            `;
+            feedbackDiv.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                feedbackDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showResults(overallScore, overallFeedback) {
+            document.getElementById('interviewScreen').style.display = 'none';
+            
+            let messageHtml = '';
+            if (overallFeedback.level === 'Excellent') {
+                messageHtml = '🎉 ' + overallFeedback.message;
+            } else if (overallFeedback.level === 'Good') {
+                messageHtml = '👍 ' + overallFeedback.message;
+            } else if (overallFeedback.level === 'Satisfactory') {
+                messageHtml = '📚 ' + overallFeedback.message;
+            } else {
+                messageHtml = '💪 ' + overallFeedback.message;
+            }
+            
+            document.getElementById('finalScore').innerText = Math.round(overallScore);
+            document.getElementById('finalMessage').innerHTML = `<p style="font-size: 1.1rem;">${messageHtml}</p>`;
+            document.getElementById('recommendations').innerHTML = `
+                <div style="text-align: left; margin-top: 20px; padding: 20px; background: #f7fafc; border-radius: 15px;">
+                    <h3>🎯 Recommended Next Steps:</h3>
+                    <ul>${(overallFeedback.recommendations || []).map(r => `<li style="margin: 10px 0;">${r}</li>`).join('')}</ul>
+                </div>
+            `;
+            
+            document.getElementById('resultsScreen').style.display = 'block';
+        }
+
+        function resetInterview() {
+            sessionId = null;
+            currentQuestionNumber = 1;
+            document.getElementById('resultsScreen').style.display = 'none';
+            document.getElementById('setupScreen').style.display = 'block';
+            document.getElementById('answerInput').value = '';
+        }
+
+        // Voice input functionality
+        function toggleVoiceInput() {
+            if (!('webkitSpeechRecognition' in window)) {
+                alert('Voice input is not supported in your browser. Please use Chrome or Edge.');
+                return;
+            }
+            
+            if (recognition) {
+                recognition.stop();
+                recognition = null;
+                document.getElementById('micBtn').classList.remove('active');
+                return;
+            }
+            
+            recognition = new webkitSpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                document.getElementById('micBtn').classList.add('active');
+                document.getElementById('micBtn').innerHTML = '🎤 Listening... Click to stop';
+            };
+            
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                const textarea = document.getElementById('answerInput');
+                textarea.value += (textarea.value ? ' ' : '') + transcript;
+                recognition.stop();
+            };
+            
+            recognition.onend = function() {
+                document.getElementById('micBtn').classList.remove('active');
+                document.getElementById('micBtn').innerHTML = '🎤 Voice Input';
+                recognition = null;
+            };
+            
+            recognition.start();
+        }
+    </script>
+</body>
+</html>
